@@ -2,10 +2,14 @@
 import {FC, useState, FormEvent, ChangeEvent, useEffect} from 'react';
 import { mockCategory } from '../lib/mockdata';
 import { ManageCategory } from '../lib/api';
-import { CategoryData } from '@/types/admin.types';
 import { FiPlus, FiSearch, FiEdit3, FiTrash2, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { Category } from '@/types/admin.types';
 import { FormData } from '@/types/admin.types';
+import { CategoryData } from '@/types/business.types';
+import { DeleteCategory, StoreCategory, UpdateCategory } from '../lib/apiCategory';
+import { CategoryFormData } from '@/types/business.types';
+import swal from 'sweetalert2';
+
 
 const CategoryPage: FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,27 +17,29 @@ const CategoryPage: FC = () => {
   const [itemsPerPage] = useState(5);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-const [manage, setManage] = useState<CategoryData[]>([]); 
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    icon: ''
+  const [manage, setManage] = useState<CategoryData[]>([]); 
+  const [formData, setFormData] = useState<CategoryFormData>({
+    name: "",
+    slug: "",
+    icon: "",
+    description: "",
   });
-   useEffect(() => {
-       const fetchData = async () => {
-         const token = localStorage.getItem('token');
-         if (!token) return;
-         const data = await ManageCategory(token);
-         setManage(data);
-       };
-       fetchData();
-     }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const data = await ManageCategory(token);
+      setManage(data);
+    };
+    fetchData();
+  }, []);
 
   // Filter categories
-const filteredCategories = (manage ?? []).filter((cat) =>
-  cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  cat.description.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  const filteredCategories = (manage ?? []).filter((cat) =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cat.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Pagination
   const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
@@ -43,17 +49,23 @@ const filteredCategories = (manage ?? []).filter((cat) =>
     startIndex + itemsPerPage
   );
 
-  const handleOpenModal = (category?: Category) => {
+  const handleOpenModal = (category?: CategoryData) => {
     if (category) {
       setEditingId(category.id);
       setFormData({
-        name: category.name,
-        description: category.description,
-        icon: category.icon
+        name: category.name || "",
+        slug: category.slug || "",
+        description: category.description || "",
+        icon: category.icon || "",
       });
     } else {
       setEditingId(null);
-      setFormData({ name: '', description: '', icon: '' });
+      setFormData({
+        name: "",
+        slug: "",
+        description: "",
+        icon: "",
+      });
     }
     setIsModalOpen(true);
   };
@@ -61,22 +73,72 @@ const filteredCategories = (manage ?? []).filter((cat) =>
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setFormData({ name: '', description: '', icon: '' });
+    setFormData({
+      name: "",
+      slug: "",
+      description: "",
+      icon: "",
+    });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (editingId) {
-      alert(`Kategori "${formData.name}" berhasil diperbarui!`);
-    } else {
-      alert(`Kategori "${formData.name}" berhasil ditambahkan!`);
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+      if (editingId) {
+        await  UpdateCategory(token,formData, editingId)
+        swal.fire({
+          icon: "success",
+          title: `Kategori "${formData.name}" berhasil diperbarui!`,
+        }).then(()=>{
+          window.location.reload();
+        });
+      } else {
+        await StoreCategory(token, formData);
+        swal.fire({
+          icon: "success",
+          title: `Kategori "${formData.name}" berhasil ditambahkan!`,
+        }).then(() => {
+        window.location.reload(); 
+      });
+        
+      // Refresh data after adding
+      const data = await ManageCategory(token);
+      setManage(data);
     }
+    
     handleCloseModal();
   };
 
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Hapus kategori "${name}"?`)) {
-      alert(`Kategori "${name}" berhasil dihapus!`);
+  const handleDelete = async (id: string, name: string) => {
+    const result = await swal.fire({
+      icon: 'warning',
+      title: 'Hapus Kategori',
+      text: `Hapus kategori "${name}"?`,
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Hapus',
+      cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
+       const token = localStorage.getItem('token');
+    if (!token) return;
+
+       await DeleteCategory(token, id)
+      
+      swal.fire({
+        icon: "success",
+        title: `Kategori "${name}" berhasil dihapus!`,
+      }) .then(() => {
+      window.location.reload(); 
+    });
+      
+      // Refresh data after deleting
+      // const data = await ManageCategory(token);
+      // setManage(data);
     }
   };
 
@@ -132,12 +194,12 @@ const filteredCategories = (manage ?? []).filter((cat) =>
                   <h3 className="text-lg font-bold text-gray-900">
                     {category.name}
                   </h3>
-            
+                  <p className="text-xs text-gray-500">/{category.slug}</p>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => handleOpenModal()}
+                  onClick={() => handleOpenModal(category)}
                   className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50 transition"
                   title="Edit"
                 >
@@ -232,6 +294,22 @@ const filteredCategories = (manage ?? []).filter((cat) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Contoh: Food & Beverage"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Slug
+                </label>
+                <input
+                  type="text"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData({ ...formData, slug: e.target.value })
+                  }
+                  placeholder="Contoh: food-beverage"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
