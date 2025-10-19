@@ -8,9 +8,10 @@ export const getApproveBusiness = async (req, res) => {
 
      try {
         const {id}  = req.params
-
+        const {approved} = req.body
         const approve = await approveBusiness({
-            id
+            id,
+            approved
         })
 
         res.json({message : "Umkm di setujui", approve})
@@ -24,8 +25,8 @@ export const getRejectedBusiness = async (req, res) => {
 
     try {
         const {id} = req.params
-
-        const rejected = await rejectBusiness({id})
+        const {reject} = req.body
+        const rejected = await rejectBusiness({id, reject})
          
         res.json({ message : "Umkm Ditolak", rejected})
 
