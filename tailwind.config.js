@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: false, // 👈 tambahkan baris ini
+  darkMode: false, 
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./component/**/*.{js,ts,jsx,tsx}",
