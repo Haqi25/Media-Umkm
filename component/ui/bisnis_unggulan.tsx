@@ -36,7 +36,7 @@ useEffect(()=> {
 
   return (
     <main className="bg-green-50 py-16 mt-12">
-      {/* 1. Header komponen, hanya render SEKALI */}
+
       <div className="flex flex-col items-center text-center mb-12">
         <h1 className="text-3xl sm:text-4xl font-bold text-green-900">
           Bisnis Lokal Unggulan
@@ -47,16 +47,16 @@ useEffect(()=> {
         </p>
       </div>
 
-      {/* 2. Container untuk KARTU Bisnis. Menggunakan flex-wrap untuk tata letak responsif. */}
+ 
       <div className="flex flex-wrap justify-center gap-8 px-6">
-        {/* MAP DILAKUKAN DI SINI, HANYA MERENDER KARTU */}
+
         {business.map((bisnis, index) => {
           const cover = bisnis.photos.find((p) => p.isPrimary);
 
-          // HARUS ADA return eksplisit untuk JSX
+
           return (
             <div
-              // Ganti key dengan 'bisnis.id' jika tersedia, jika tidak baru gunakan index
+            
               key={index} 
               className="bg-white border border-green-200 rounded-3xl shadow-md hover:shadow-lg transition-all duration-300 w-full sm:w-[320px] overflow-hidden flex flex-col"
             >
@@ -68,7 +68,7 @@ useEffect(()=> {
                       : "/placeholder.webp"
                   }
                   alt={bisnis.businessName}
-                  // Tambahkan properti wajib untuk Next/Image
+             
                   fill={true}
                   sizes="(max-width: 640px) 100vw, 320px" 
                   objectFit="cover"
@@ -87,7 +87,7 @@ useEffect(()=> {
                 <p className="text-gray-500 text-sm mt-1">📍 {bisnis.address}</p>
 
                 <div className="flex items-center gap-2 mt-2">
-                  {/* Gunakan toFixed(1) untuk format rating yang lebih baik */}
+              
                   <span className="text-yellow-500 text-sm">
                     ⭐ {bisnis.averageRating ? bisnis.averageRating.toFixed(1) : 'N/A'}
                   </span>
@@ -97,7 +97,7 @@ useEffect(()=> {
                   </span>
                 </div>
 
-                {/* Gunakan line-clamp-2 untuk membatasi deskripsi ke 2 baris */}
+             
                 <p className="text-gray-600 text-sm mt-3 line-clamp-2">
                   {bisnis.description}
                 </p>
@@ -107,7 +107,6 @@ useEffect(()=> {
                     {bisnis.category?.name || 'Tidak ada kategori'}
                   </span>
                   
-                  {/* Sebaiknya gunakan komponen <Link> dari Next.js untuk navigasi */}
                   <button className="bg-green-500 hover:bg-green-600 text-white rounded-full px-4 py-1 text-sm font-medium">
                     Kunjungi
                   </button>
@@ -116,13 +115,12 @@ useEffect(()=> {
             </div>
           );
         })}
-        {/* Tampilkan pesan jika tidak ada data */}
+     
          {business.length === 0 && (
           <p className="text-gray-500">Tidak ada bisnis unggulan untuk ditampilkan saat ini.</p>
         )}
       </div>
 
-      {/* 3. Footer/Tombol Explore More, hanya render SEKALI */}
       <div className="flex items-center justify-center gap-4 mt-12">
         <hr className="w-1/4 border-t-2 border-gray-300" />
         <button className="bg-green-500 hover:bg-green-600 text-white font-semibold text-lg rounded-full px-10 py-3 shadow-md">
