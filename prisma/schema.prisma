@@ -25,6 +25,8 @@ model Users {
   avatar      String?
   refreshToken  String?
   verifyToken  String?
+  otp          String?
+  otpExpires   DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -80,7 +82,7 @@ model Business {
   categoryId            Int
 
   // Relations
-  owner                 Users     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                 Users   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   category              Category @relation(fields: [categoryId], references: [id])
    photos                BusinessPhoto[]
    reviews               Review[]

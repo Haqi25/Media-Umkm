@@ -38,6 +38,14 @@ export const createUser = async () => {
         isVerified : true,
         role: "UMKM",
       },
+      {
+        fullName: "Tono Syahputra",
+        email: "Tono@warunghijau.id",
+        password: hashedPassword,
+        avatar  :  defaultAvatar,
+        isVerified : true,
+        role: "UMKM",
+      },
     ],
     skipDuplicates: true,
         
