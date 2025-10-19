@@ -1,10 +1,7 @@
 'use client';
 import { useState, FC, ChangeEvent, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import AuthLayout from '../components/AuthLayout';
-import Image from 'next/image'
-import { RequestResetData } from '@/types/auth.types';
 import InputField from '../components/InputField';
 import { ResetPassword } from '@/types/auth.types';
 import {AiOutlineLock} from 'react-icons/ai'
@@ -132,7 +129,7 @@ const PasswordReset: FC = () => {
            }`}
         >
          {loading ? 'Mengirim...' : 'Ubah Password'}
-</button>
+   </button>
    
         </AuthLayout>
     )
