@@ -25,7 +25,7 @@ import Umkm from '@/types/admin.types';
       },
       {
         label: 'Kategori Populer  ',
-        value: 'Food &\nBeverage',
+        value: 'Kuliner',
         icon: FiTrendingUp,
         bgColor: 'bg-purple-50',
         iconBgColor: 'bg-purple-500'

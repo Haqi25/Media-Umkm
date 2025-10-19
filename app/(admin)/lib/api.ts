@@ -2,6 +2,7 @@ import { FiShoppingBag, FiUsers, FiCheckCircle, FiTrendingUp } from "react-icons
 import { DashboardResponse, ManageUserResponse, CategoryResponse, ProfileResponse } from "@/types/admin.types"
 
 import {BusinessResponse} from "@/types/admin.types";
+import { IdCard } from "lucide-react";
 //Dasboard Admin 
 export const getDashboardData = async (token: string): Promise<DashboardResponse> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`, {
@@ -45,7 +46,7 @@ export const getDashboardCards = async (token) => {
     },
     {
       label: "Kategori Populer",
-      value: "Food & Beverage",
+      value: "Kuliner",
       icon: FiTrendingUp,
       bgColor: "bg-purple-50",
       iconBgColor: "bg-purple-500",
@@ -89,6 +90,7 @@ export const ManageUmkm = async (token: string) => {
   }
 
   const data = await res.json();
+  console.log(data)
 
   if (!data || !Array.isArray(data.business)) {
     console.error("Format response tidak sesuai:", data);
@@ -96,6 +98,7 @@ export const ManageUmkm = async (token: string) => {
   }
 
   return data.business.map((biz: any) => ({
+    id: biz.id,
     fullName: biz.owner?.fullName ?? "Tidak diketahui",
     email: biz.owner?.email ?? "-",
     businessName: biz.businessName ?? "-",
@@ -123,4 +126,24 @@ export const ManageCategory = async (token: string): Promise<CategoryResponse[]>
   const data = await res.json();
   return data; 
 };
+export const deleteUser = async(token: string, id: string) => {
+  
+       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/${id}`, {
+        
+        method : "DELETE",
+        
+        headers :   {"Authorization": `Bearer ${token}`, 
+       "Content-Type": "application/json",}
 
+       })
+//          console.log("API URL:", `${process.env.NEXT_PUBLIC_API_URL}/admin/${id}`);
+// console.log("Token dikirim:", token); //for debuggging
+       if(!res.ok) {
+        const text = await res.text()
+        console.error(text)
+        throw new Error("Gagal Hapus User")
+       }
+       const data = await res.json()
+      return data
+  
+}
