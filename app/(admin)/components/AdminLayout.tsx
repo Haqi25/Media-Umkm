@@ -23,6 +23,7 @@ const Sidebar:FC<SideBarProps> = ({isOpen, setIsOpen, activeMenu, setActiveMenu}
     { id: 'settings', label: 'Pengaturan', icon: FiSettings, href: '/settings' }
     ];
     const [loading, setLoading] = useState<boolean>(false)
+    
 
     const handleMenuClick = (id: string, href: string) => {
     setActiveMenu(id);
