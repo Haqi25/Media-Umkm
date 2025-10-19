@@ -1,7 +1,6 @@
 import SearchBar from "@/component/dashboard_user/navbar";
 
 
-
 export default function UserLayout({children}) {
     return (
         <html lang="en">
