@@ -170,7 +170,9 @@ const business = await prisma.business.findMany({
       businessName : true,
     description : true,
     averageRating : true,
-    category: true,
+    category : {
+      select : {name : true}
+    },
     reviews: true,
     address: true,
     photos : {where : 
@@ -185,3 +187,27 @@ const business = await prisma.business.findMany({
 
 return business
 }
+
+export const newBusiness = async() => {
+
+  const business = await prisma.business.findMany({
+      take : 2,
+      where : {
+        isApproved:true
+      },
+      select : {
+        businessName: true,
+        category : {
+          select : {name : true}
+        },
+        photos : {
+          where : {
+            isPrimary: true
+          }
+        }
+      },
+      orderBy : {createdAt: "desc"}
+  })
+        return business;
+}
+
