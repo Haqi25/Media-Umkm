@@ -16,9 +16,14 @@ export const categoryStore = async ({name, slug, icon, description}) =>{
 export const getCategory = async() => {
 
     const allCategory = await prisma.category.findMany({
-        include : {
-            businesses : true
-        }
+             select : {
+                id: true,
+                name : true,
+                icon : true,
+                description : true,
+                createdAt: true
+             },
+             orderBy : { createdAt : "desc"}
     })
 
     return allCategory

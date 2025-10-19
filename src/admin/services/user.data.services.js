@@ -8,6 +8,7 @@ export const getAllData = async() =>{
        
         select: {
          id: true,
+         fullName: true,
         email : true,
         role: true,
         createdAt: true,
@@ -57,3 +58,24 @@ export const destroyUser = async({id}) => {
     )
     return deleteId
 }
+
+
+export const updateProfile = async ({ fullName, userId }) => {
+ if (!userId) throw new Error("userId wajib diisi");
+
+  const dataToUpdate = {};
+  if (fullName) dataToUpdate.fullName = fullName;
+
+  if (Object.keys(dataToUpdate).length === 0) {
+    throw new Error("Tidak ada data yang diupdate");
+  }
+
+  const updatedUser = await prisma.users.update({
+    where: { id: userId },
+    data: dataToUpdate,
+    select: { fullName: true },
+  });
+
+  return updatedUser; 
+};
+

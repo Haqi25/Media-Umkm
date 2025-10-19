@@ -1,4 +1,4 @@
-import { getAllData, searchUser, destroyUser } from "../services/user.data.services.js";
+import { getAllData, searchUser, destroyUser, updateProfile } from "../services/user.data.services.js";
 
 
 
@@ -54,4 +54,16 @@ export const deleteById = async(req, res) => {
 
     
     
+}
+
+export const editProfileAdmin = async(req, res) => {
+    const userId = req.userId;
+    const {fullName} = req.body
+    try {
+        const result = await updateProfile({fullName, userId})
+
+        res.json({message: "Berhasil Diubah", result})
+    } catch (error) {
+        return res.status(500).json({error : error.message})
+    }
 }

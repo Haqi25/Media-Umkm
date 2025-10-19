@@ -6,15 +6,13 @@ export  const allBusiness  = async() => {
 
   const business = await prisma.business.findMany({
    select : {
+    id : true,
+    owner : {select : {fullName : true, email: true}},
     isApproved: true || false,
     businessName : true,
-    description : true,
     averageRating : true,
-    reviews: true,
-    address: true,
-    photos : {where : 
-      {isPrimary : true}
-     },
+    createdAt: true,
+    category: {select: {name: true} }
     }
     
     })

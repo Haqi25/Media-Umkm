@@ -7,8 +7,8 @@ import { getApproveBusiness,
 
 const router = Router()
 
-router.get("/:id/approve", getApproveBusiness)
-router.get("/:id/reject",getRejectedBusiness)
+router.post("/:id/approve", getApproveBusiness)
+router.post("/:id/reject",getRejectedBusiness)
 router.get("/pendingBusiness", getPendingBusiness)
 
 export default router;

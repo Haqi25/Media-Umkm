@@ -1,4 +1,4 @@
-import {loginUser, registerUser, verifyEmail,  AccessToken, resetPass, logoutUser } from "../services/auth.services.js"
+import {loginUser, otpVerify, resendOtp,registerUser, verifyEmail,  AccessToken, resetPass, logoutUser } from "../services/auth.services.js"
 import { Prisma } from "@prisma/client";
 import { requestNewPassword } from "../services/auth.services.js";
 export const register = async (req, res) => {
@@ -10,12 +10,16 @@ export const register = async (req, res) => {
             email,
             avatar,
             phone,
-            password
+            password,
+            confirmPassword
         } = req.body;
 if (!password) {
-  return res.status(400).json({ error: "Password is required" });
+  return res.status(400).json({ error: "Password tidak boleh kosong" });
 }
-    const result = await registerUser({fullName, email, avatar, phone, password})
+if(password !== confirmPassword){
+  return res.status(400).json({ error: "Password dan konfirmasi tidak sesuai" });
+}
+    const result = await registerUser({fullName, email, avatar, phone, password, confirmPassword})
 
     res.json({ message: "User Registered. Please check your email to verify.", data : result });
   } catch (error) {
@@ -57,25 +61,60 @@ export const verifyemail = async (req, res) => {
 
 export const login = async (req, res) =>{
     try {
-        const {
-        
-            
+        const {   
             email,
             password,
         } = req.body;
         
         if (!password || !email) {
-  return res.status(400).json({ error: "Password and Email is required" });
+ res.status(400).json({ error: "Password and Email is required" });
 }
-  
-const {token, refreshToken} = await loginUser({email, password})
 
-        res.json({ message : "Login Successful", token, refreshToken});
+        const user = await loginUser({email, password})
+
+        res.json({ message : "Kode OTP Dikirimkan di emailmu", user});
     } catch (error) {
-        res.status(500).json({error : error.message})
+        return res.status(500).json({error : error.message})
     }
 };
 
+
+
+export const verifyOtp = async(req, res) => {
+try {
+  const {email, otp} = req.body;
+
+  const verify = await otpVerify({
+    email,
+    otp
+  })
+
+  res.json({verify})
+}
+ catch (error) {
+  return res.status(500).json({error : error.message})
+}
+}
+
+export const otpResend = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email wajib diisi" });
+    }
+
+    await resendOtp({ email });
+
+    return res.status(200).json({
+      message: "Kode OTP Berhasil diperbarui dan dikirim ke email Anda",
+    });
+  } catch (error) {
+    console.error("Error resend OTP:", error);
+    return res.status(500).json({ error: error.message });
+  }
+};
+  
 export const refreshToken = async (req, res) => {
   try {
     const { refreshToken } = req.body; 
