@@ -21,7 +21,7 @@ export const getAllCategory = async (req, res) => {
         
         const allCategory = await getCategory()
 
-        res.json({allCategory})
+        res.json(allCategory)
     } catch (error) {
         return res.status(500).json({error : error.message})
     }
