@@ -1,15 +1,15 @@
 'use client'
-import {FC, useState, ChangeEvent,FormEvent, useEffect} from 'react';
-import { AdminProfile, ProfileData } from '@/types/admin.types';
+import {FC, useState,  useEffect} from 'react';
+import {  AdminProfileEdit, ProfileData } from '@/types/admin.types';
 import { FiUser, FiSave } from 'react-icons/fi';
+import swal from 'sweetalert2'
 
-
-const SettingsPage: FC = () => {
+const SettingsPage: FC<AdminProfileEdit> = ({userId}) => {
   const [activeTab, setActiveTab] = useState('profile');
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
-  
-  // Profile State
+  const [editingId, setEditingId] = useState<string | null>(null);
+
    const [profile, setProfile] = useState<ProfileData>({
     fullName: '',
     email: '',
@@ -51,16 +51,49 @@ const SettingsPage: FC = () => {
     fetchProfile();
   }, []);
   
-     const handleProfileChange = (e: ChangeEvent<HTMLInputElement>) => {
-         const { name, value } = e.target;
-         setProfile({ ...profile, [name]: value });
-       };
-     const handleSaveProfile = (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        alert('Profil berhasil diperbarui!');
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      };
+      const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const result = await swal.fire({
+        title: "Apakah Kamu Mau menyimpan Perubahan?",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Simpan",
+        denyButtonText: "Tidak",
+      });
+
+      if (result.isConfirmed) {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/editAdmin`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ fullName: profile.fullName, userId }),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Gagal Mengupdate Profile");
+        }
+
+        await swal.fire("Berhasil!", "Profile berhasil diperbarui.", "success");
+        window.location.reload();
+      } else if (result.isDenied) {
+        await swal.fire("Perubahan dibatalkan", "", "info");
+      }
+    } catch (err) {
+      swal.fire("Error", err.message || "Terjadi kesalahan", "error");
+    }
+  };
     
 
 return (
@@ -158,9 +191,10 @@ return (
                               />
                             </div>
                           </div>
-              
+                          
                           <button
                             type="submit"
+                         
                             className="flex items-center gap-2 px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium"
                           >
                             <FiSave size={20} />
