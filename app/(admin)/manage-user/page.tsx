@@ -5,12 +5,16 @@ import { mockUser } from '../lib/mockdata';
 import { FiFilter, FiPlus, FiSearch, FiEye, FiEdit2,FiTrash2, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ManageUsers } from '../lib/api';
 import { useSearchParams } from "next/navigation";
+import { deleteUser } from '../lib/api';
+import swal from 'sweetalert2';
 const ManageUser: FC = (async) => {
         const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [manage, setManage] = useState<any[]>([]);
+const [loadingId, setLoadingId] = useState<string | null>(null);
+
 
  const searchParams = useSearchParams();
   useEffect(() => {
@@ -22,6 +26,51 @@ const ManageUser: FC = (async) => {
      };
      fetchData();
    }, [searchParams]);
+
+
+  const handleDelete = async (id: string) => {
+const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Token tidak ditemukan, silakan login ulang.");
+    return;
+  }
+
+   const result = await swal.fire({
+    title: "Yakin ingin menghapus?",
+    text: "Data ini tidak dapat dikembalikan!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Ya, hapus!",
+    cancelButtonText: "Batal",
+  });
+
+ 
+  if (!result.isConfirmed) return;
+    try {
+         setLoadingId(id);
+      await deleteUser(token, id);
+    
+    swal
+    .fire({
+      title: "User Berhasil Dihapus",
+      icon: "success",
+      confirmButtonText: "OK",
+    })
+    .then(() => {
+      window.location.reload(); 
+    });
+    } catch (err: any) {
+    swal.fire({
+    icon: "error",
+    title: "Oops...",
+    text: `Gagal menghapus user: ${err.message}`,
+  });
+
+    }
+  };
 
 
   // Filter users
@@ -184,13 +233,10 @@ const ManageUser: FC = (async) => {
                   </td>
                   <td className="px-4 sm:px-6 py-4">
                     <div className="flex gap-2">
-                      <button className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition" title="View">
-                        <FiEye size={18} />
-                      </button>
-                      <button className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50 transition" title="Edit">
-                        <FiEdit2 size={18} />
-                      </button>
-                      <button className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition" title="Delete">
+                    
+                      <button  
+                        onClick={() => handleDelete(user.id)}
+                      className="cursor-pointer text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition" title="Delete">
                         <FiTrash2 size={18} />
                       </button>
                     </div>
