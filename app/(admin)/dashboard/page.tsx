@@ -6,16 +6,18 @@ import ChartComponent from '../components/Chart';
 import StatCardComponent from '../components/StatCard';
 import { mockNewUMKMs } from '../lib/mockdata';
 import { getDashboardCards } from '../lib/api';
+import {BusinessData} from '@/types/business.types'
+import { Contact2 } from 'lucide-react';
+import Image from "next/image";
 
 
-
-const AdminDashboard : FC = (async) => {
+const AdminDashboard : FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false)
   const [activeMenu, setActiveMenu ] = useState('dashboard')
    const [cards, setCards] = useState<any[]>([]); 
-
+ const [business, setBusiness] = useState<BusinessData[]>([]);
    const searchParams = useSearchParams();
-
+  const [loading, setLoading] = useState<boolean>(false);
   useEffect(() => {
    
     const tokenFromUrl = searchParams.get("token");
@@ -24,6 +26,8 @@ const AdminDashboard : FC = (async) => {
 
       window.history.replaceState({}, "", "/dashboard");
     }
+
+
 
     const token = localStorage.getItem("token");
     if (!token) return console.warn("Token tidak ditemukan");
@@ -34,6 +38,34 @@ const AdminDashboard : FC = (async) => {
     };
     fetchData();
   }, [searchParams]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+
+      try {
+           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/umkm/display/newUmkm`, {
+        cache : 'no-store',
+      })
+      const data = await res.json();
+      console.log(data)
+      if(!res.ok){
+        const text = await res.text();
+        console.error("Error Message", text)
+        throw new Error("Gagal Mendapatkan UMKM")
+      }
+
+        setBusiness(data)
+      } catch (error) {
+         console.error(error);
+      }finally {
+       setLoading(false)
+      }
+   
+    }
+    fetchData();
+  }, [])
+
+  
   return (
     <div className="flex h-screen bg-gray-50 ">
     
@@ -54,29 +86,45 @@ const AdminDashboard : FC = (async) => {
                     UMKM Terbaru
                   </h3>
                   <div className="space-y-3">
-                    {mockNewUMKMs.map((umkm) => (
-                      <div
-                        key={umkm.id}
-                        className="flex items-center gap-3 pb-3 border-b border-gray-100 last:border-0"
-                      >
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">
-                          {umkm.image}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {umkm.name}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {umkm.category}
-                          </p>
-                        </div>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${umkm.statusColor}`}
-                        >
-                          {umkm.status}
-                        </span>
-                      </div>
-                    ))}
+               {business.map((umkm, index) => {
+  const cover = umkm.photos?.find((p) => p.isPrimary);
+
+  return (
+    <div
+      key={index}
+      className="flex items-center gap-3 pb-3 border-b border-gray-100 last:border-0"
+    >
+      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden relative">
+        <Image
+          src={
+            cover
+              ? `${process.env.NEXT_PUBLIC_API_URL}/${cover.filePath}`
+              : "/placeholder.webp"
+          }
+          alt={umkm.businessName}
+          fill
+          sizes="(max-width: 640px) 100vw, 320px"
+          className="object-cover"
+        />
+      </div>
+
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-900">
+          {umkm.businessName}
+        </p>
+        <p className="text-xs text-gray-500">{umkm.category?.name}</p>
+      </div>
+
+      <span
+        className="text-xs px-2 py-1 rounded-full"
+        
+      >
+        Disetujui
+      
+      </span>
+    </div>
+  );
+})}
                     <button className="w-full mt-4 py-2 text-center text-green-600 hover:text-green-700 font-medium text-sm border border-green-200 rounded-lg hover:bg-green-50 transition">
                       Lihat Semua UMKM
                     </button>
