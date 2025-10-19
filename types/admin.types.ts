@@ -130,6 +130,9 @@ export interface ProfileData {
   role : string
 
 }
+export interface BusinessCategory {
+  name: string;
+}
 
 export interface ProfileResponse {
   profile : ProfileData
@@ -138,3 +141,27 @@ export interface ProfileResponse {
 export interface LogoutAdmin {
   refreshToken: String
 }
+
+
+export interface BusinessPhoto {
+  id: number;
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+  isPrimary: boolean;
+}
+
+export interface BusinessData {
+  businessName: string;
+  description: string;
+  category: BusinessCategory;
+  photos: BusinessPhoto[]; 
+}
+
+
+export interface AdminProfileEdit {
+  userId : string
+  fullName : string
+}
+
+export type AdminFormData = Omit<AdminProfileEdit, "id">;
