@@ -15,13 +15,18 @@ import approvalBusiness from "./src/admin/routes/approval.business.routes.js"
 import calculateScore from "./src/admin/routes/calculateSustainabilityScore.routes.js"
 import getUmkm from "./src/admin/routes/business.routes.js"
 import sustainabilityPractice  from "./src/admin/routes/approval.sustainabilitypractice.js"
-
-
+import cors from 'cors';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
 app.use(express.json());
 
+app.use(cors({
+  origin: 'http://localhost:3000', 
+  credentials: true
+}));
 dotenv.config();
 app.get('/', (req, res) => {
 res.send('Hello World!');
@@ -57,6 +62,11 @@ const PORT = process.env.PORT || 3000;
 
 
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve folder uploads
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 app.listen(PORT, ()=> {
     console.log(`Server running on http://localhost:${PORT}`)
 });
