@@ -2,9 +2,10 @@ import prisma from "../db/index.js";
 import nodemailer from "nodemailer";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 
-export const registerUser = async({fullName, email, avatar, phone, password}) => {
+export const registerUser = async({fullName, email, avatar, phone, password, confirmPassword}) => {
 
        const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -22,7 +23,7 @@ export const registerUser = async({fullName, email, avatar, phone, password}) =>
             verifyToken: token
             },
         });
-        const verifylink = `http://localhost:3002/api/auth/verifyemail?token=${token}`
+     const verifylink = `http://localhost:3000/verify?token=${token}`;
 
   const transporter = nodemailer.createTransport({
         service : "gmail",
@@ -74,14 +75,100 @@ export const loginUser = async({email, password})=>{
         throw new Error("Please verify your email")    
     }
 
-const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) throw new Error("Password is invalid")
+ const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid){
+    throw new Error("Password Salah")
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "15m",
-    });
+  }
+    
+ 
+  const otp = crypto.randomInt(100000, 999999).toString();
+  const expires = new Date(Date.now() + 5 * 60 * 1000); 
 
-    const refreshToken = jwt.sign(
+  await prisma.users.update({
+    where: { email },
+    data: { otp, otpExpires: expires },
+  });
+
+  
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.USER_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Kode OTP Login Kamu",
+    text: `Kode OTP kamu adalah ${otp}. Berlaku 5 menit.`,
+  });
+
+   
+
+}
+
+export const resendOtp = async({email}) => {
+  
+  const user = await prisma.users.findUnique({where: {email}})
+
+   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+   await prisma.users.update({
+    where : {email},
+    data : {
+       otp,
+      otpExpires: new Date(Date.now() + 5 * 60 * 1000),
+    }
+   })
+
+   const transporter = nodemailer.createTransport({
+    service : 'gmail',
+    auth : {
+      user : process.env.EMAIL_USER,
+      pass : process.env.USER_PASS
+    }
+
+   })
+
+   await transporter.sendMail({
+    from : `"Media UMKM" <${process.env.EMAIL_USER}>`,
+    to : email,
+    subject: "Kode OTP Baru Anda",
+    text : `Kode verifikasi baru Anda adalah: ${otp}`
+    
+   })
+}
+export const otpVerify = async({email, otp}) => {
+
+  if(!email || !otp){
+    throw new Error("Otp dan Wajib diisi")
+  }
+
+  const user = await prisma.users.findUnique({
+    where : {email}
+  })
+
+  if(user.otp !== otp){
+    throw new Error("Kode OTP salah")
+  }
+
+  await prisma.users.update({
+   where : {email},
+   data : {
+    otp : null,
+    otpExpires:null
+   }
+  })
+
+    const token = jwt.sign(
+    {id: user.id, email: user.email},
+    process.env.JWT_SECRET,
+    {expiresIn: "1h"}
+  )
+   const refreshToken = jwt.sign(
       { id: user.id },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "7d" }
@@ -91,9 +178,11 @@ const isValid = await bcrypt.compare(password, user.password);
       where: { id: user.id },
       data: { refreshToken },
     });
-return {token, refreshToken}
-}
 
+return {token, refreshToken}
+
+
+}
 
 export const AccessToken = async({refreshToken}) => {
   const user = await prisma.users.findFirst({
@@ -143,7 +232,7 @@ export const requestNewPassword  = async({email}) => {
   })
 
 
-    const resetlink = `http://localhost:3002/api/auth/resetpassword?token=${token}`
+    const resetlink = `http://localhost:3000/resetpassword?token=${token}`
 
       const transporter = nodemailer.createTransport({
         service : "gmail",
