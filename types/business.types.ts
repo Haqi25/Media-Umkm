@@ -1,3 +1,5 @@
+import App from "next/app";
+
 export interface BusinessPhoto {
   id: number;
   fileName: string;
@@ -19,3 +21,22 @@ export interface BusinessData {
   photos: BusinessPhoto[]; 
 }
 
+
+export interface CategoryData {
+  id: string,
+  name : string,
+  slug : string,
+  icon : string,
+  description : string,
+}
+
+export type CategoryFormData = Omit<CategoryData, "id">;
+
+
+
+
+export interface ApprovalBusiness {
+  id: string
+}
+
+export type AprovalBusinessData = Omit<ApprovalBusiness, "id">
